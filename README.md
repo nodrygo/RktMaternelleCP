@@ -1,3 +1,4 @@
+![splash image](./ecrire.png) 
 # RktMaternelleCP
 apprend  à écrire tes premiers mots
 
@@ -17,10 +18,14 @@ Cloner ce repo dans un répertoire de votre convenance
 puis décompressez le fichier des imagettes dans le répertoire *RktMaternelleCP*  
 ceci doit crée un répertoire *img* indispensable  
 
-Ensuite avec *drracket* ou *gracket*  ouvrez et exécutez *ecrire.rkt*   
-vous pourrez le compiler pour le rendre autonome sur votre plateforme 
+# Utilisation   
+Ensuite avec *drracket* ou *gracket*  ouvrez et exécutez *ecrire.rkt*     
+*vous pourrez le compiler pour le rendre autonome sur votre plateforme*   
 
-il est librement utilisable par qui le désire mais aux risques et périls des utilisateurs
+il est librement utilisable par qui le désire mais aux risques et périls des utilisateurs  
+
+la touche ***espace*** permet de sélectionner un nouveau mot donc pas de mot avec espace dans cette version   
+la touche ***echap*** (***escape***) permet de quitter 
 
 
 ## Autres ressources
