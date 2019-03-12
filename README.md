@@ -7,13 +7,21 @@ fonctionne sur un Linux Mint 19 mais devrait pouvoir fonctionner sur MacOS ou Wi
 
 ## Installation  
 installer [**eSpeak**](http://espeak.sourceforge.net/)  
-*si vous connaissez mieux en mode autonome et gratuit dites moi ;-) *
+*si vous connaissez mieux en mode autonome et gratuit dites moi ;-)*   
 
 puis intaller [**RACKET**](https://racket-lang.org/)   
-dans *DrRacket* ouvrez et exécutez *ecrire.rkt*  
+
+Cloner ce repo dans un répertoire de votre convenance   
+``` git clone https://github.com/nodrygo/RktMaternelleCP ```  
+
+puis décompressez le fichier des imagettes dans le répertoire *RktMaternelleCP*  
+ceci doit crée un répertoire *img* indispensable  
+
+Ensuite avec *drracket* ou *gracket*  ouvrez et exécutez *ecrire.rkt*   
 vous pourrez le compiler pour le rendre autonome sur votre plateforme 
 
 il est librement utilisable par qui le désire mais aux risques et périls des utilisateurs
+
 
 ## Autres ressources
 toutes les imagettes sont issues de sites libres et gratuits suivants    
