@@ -2,6 +2,7 @@
 (require racket/system)
 (require racket/gui/base)
 (require racket/draw)
+(require racket/stream)
 ; espeak -vfr+m2 -g 11  -p 55  -s 60 "écrit le mot chien avec un C un H un I  un E un N "
 ; espeak -vfr+f1 -g 11  -p 55 -s 60  "écrit le chiffre 45 avec un 4 et un 5 "
 ; non un C   ; c'est bien    ; bravo
@@ -28,9 +29,24 @@
 (define err #f)
 (define playing #f)
 (define bpoints 0)
+(define proc #f)
+;(define cout  (open-output-file "cout" #:exists 'replace))
+;(define cerr  (open-output-file "cerr" #:exists 'replace ))
+(define progpath (find-executable-path "espeak"))
+
+(define (runspeak msg)
+    (define-values (s stdout stdin stderr) (subprocess #f #f #f 'new progpath "-vfr+m1" "-p 60" "-s 110" msg )) 
+    (set! proc s ))
+
+(define (killspeak)
+  (when proc (subprocess-kill proc #t))
+)
+
+(runspeak "choisi un mot avec la touche espace" )
 
 ; load image and normalize scale in destimg
 (send bptimg  load-file "Bons_points.jpg")
+
 (define (loadimg name)
   (when (file-exists? name)
     (println name)
@@ -52,9 +68,8 @@
 
 ; handle keys 
 (define (handle-key key)
-    (println key)
     (cond 
-         ((eq? key 'escape) (exit 0))
+         ((eq? key 'escape)(exit 0))
          ((eq? key #\space) (newword)(send canvas on-paint) )
          (else (addkey key))
     )
@@ -109,7 +124,7 @@
 (define myframe% (class frame%
                  (define/override (on-subwindow-char target ev )(handle-ev ev))
                  (super-new)))
-(define mainwin (new myframe% [label "Ecris un mot"]))
+(define mainwin (new myframe% [label "Ecris un mot"][width 600 ][height 500])) 
 (define canvas (new canvas%	[parent mainwin]
                                 [paint-callback do-paint]))
 
@@ -119,6 +134,7 @@
 
 ;change the current word
 (define (newword)
+  (killspeak)
   (set! playing #t)
   (set! currentpos 0)
   (set! endtxt "")
@@ -129,33 +145,31 @@
   (loadimg   (build-path  "img" (list-ref selection 2 )))
   (send canvas on-paint)
   (send canvas  refresh-now)
-  (let [(speech   (format "espeak -vfr+m1 -g 1 -p 60  -s 110  -a 180 \"écrit ~a ~a avec un ~a \" "
+  (let [(speech   (format "\"écrit ~a ~a avec un ~a \" "
                                         (list-ref selection 0 ) currentword (string-ref currentword 0) ))
-       ;(speech2   (format "espeak -vfr+m1 -p 60  -s 110  -a 180 \"un ~a \" " (string-ref currentword 0) ))
        ]
-    ;(println speech)
-    (system  speech)
-    ;(process speech2)
+    (runspeak  speech)
   )    
 )
 
 (define (addkey k)
   (unless (symbol? k )
          (when (char-alphabetic? k)
+           (killspeak)
            (set! endtxt "")
            (if (eq? k (string-ref currentword  currentpos))
                (begin 
                       (set! currentpos (+ 1 currentpos))
                       (send canvas on-paint)
                       (when  (< currentpos (string-length currentword))
-                         (process (format "espeak  -vfr+m1 -p 60  -s 110  -a 180 \"un ~a \" " (string-ref currentword  currentpos)))
+                        (runspeak   (format "\"un ~a \" " (string-ref currentword  currentpos)))
                       )) 
                (begin
                       (set! err #t)
                       (set! endtxt (format "non il faut un ~a " (string-ref currentword   currentpos)))                 
                       (send canvas on-paint)
                       (play-sound "Pew.wav" #f)
-                      (process (format "espeak  -vfr+m1 -p 60  -s 110  -a 180 \"non un  ~a \" " (string-ref currentword   currentpos)))
+                      (runspeak (format "\"non un  ~a \" " (string-ref currentword   currentpos)))
                      
            ))
            
@@ -167,10 +181,9 @@
                    (set! endtxt "Super tu gagnes un bon point")
                    (set! bpoints (+ 1 bpoints))))
                    (send canvas on-paint)
-             (process (format "espeak -vfr+m1 -p 60  -s 110  -a 180 \" ~a  \" " endtxt))
+             (runspeak  endtxt)
              (send canvas on-paint)
              )))
 )
 ; start with new word 
 
-(process (format "espeak  -vfr+m1 -p 60  -s 110  \"appuie sur espace pour commencer \" "))
