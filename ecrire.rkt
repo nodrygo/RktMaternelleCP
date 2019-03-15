@@ -4,25 +4,20 @@
 (require racket/draw)
 (require racket/stream)
 ; espeak -vfr+m2 -g 11  -p 55  -s 60 "écrit le mot chien avec un C un H un I  un E un N "
-; espeak -vfr+f1 -g 11  -p 55 -s 60  "écrit le chiffre 45 avec un 4 et un 5 "
-; non un C   ; c'est bien    ; bravo
-; maintenant un H
-; decoupe mot en lettre ; sequence de lettre
-; boutton nouveau mot , ré-ecouter
-; lire les mots dans un fichier texte
-
 (define wordslist (file->list "words.txt" ))
-(define selection '("" "appuie sur la touche espace pour commencer " #f))
-(define currentword "appuie sur la touche espace pour commencer" )
+(define selection '("" "appuie sur la touche ENTREE pour commencer " #f))
+(define currentword "appuie sur la touche ENTREE pour commencer" )
 (define currentpos 0 )
 (define blue-brush (new brush% [color "blue"]))
 (define blue-pen (make-pen #:color "blue"))
 (define green-pen (make-pen #:color "green"))
 (define font (make-font #:size 55  #:weight 'ultraheavy #:family 'decorative))
+(define fontnew (make-font #:size 25  #:weight 'ultraheavy #:family 'decorative))
 (define baseimg (make-bitmap 250 250))
 (define destimg (make-bitmap 250 250))
 (define bptimg (make-bitmap 100 100))
 (define bdc (send destimg make-dc))
+(define newwordgui 'none)
 ;(define bptdc (send bptimg make-dc))
 (define endtxt "")
 (define help #f)
@@ -42,7 +37,7 @@
   (when proc (subprocess-kill proc #t))
 )
 
-(runspeak "choisi un mot avec la touche espace" )
+(runspeak "choisi un mot avec la touche ENTREE " )
 
 ; load image and normalize scale in destimg
 (send bptimg  load-file "Bons_points.jpg")
@@ -58,7 +53,17 @@
             (send bdc draw-bitmap-section-smooth baseimg 0 0 250 250 0 0 imgw imgh)))
 )
 
-; handle event 
+; handle mouse event 
+(define (handle-mouse ev)
+     (when (send ev button-down?)
+        (let [(mx (send ev get-x))
+              (my (send ev get-y))
+             ]
+          ;(println (format "~a ~a " mx my))
+          (when (send newwordgui in-region? mx my) (newword))
+          )
+))
+; handle key event
 (define (handle-ev ev)
         (let [(key (send ev  get-key-code))
              ]
@@ -69,8 +74,8 @@
 ; handle keys 
 (define (handle-key key)
     (cond 
-         ((eq? key 'escape)(exit 0))
-         ((eq? key #\space) (newword)(send canvas on-paint) )
+         ((eq? key 'escape) (killspeak)(exit 0))
+         ((eq? key #\return) (newword)(send canvas on-paint) )
          (else (addkey key))
     )
 )
@@ -84,6 +89,24 @@
     (send dc draw-text (car selection)   0 py )
     (unless (>= 0 currentpos )(send dc draw-text (substring word 0  currentpos) (+ w px 10)  py ))
   ))
+
+;set region
+(define (setnewwordregion dc)
+  (send dc set-origin 300 20)
+  (set! newwordgui (new region% [dc dc]))
+   (send newwordgui set-rounded-rectangle 0 0 160 60)
+   (send dc set-origin 0 0)
+  )
+;draw region new word
+(define (drawnewwordregion)
+  (let [(rdc(send newwordgui get-dc))   
+        ]
+  (send rdc set-pen blue-pen)
+  (send rdc set-brush blue-brush)
+  (send rdc draw-rounded-rectangle 0 0 160 60) 
+  (send rdc set-text-foreground "Red")
+  (send rdc draw-text "nouveau" 10  10 )
+))
 
 ; paint handle
 (define (do-paint canvas dc)
@@ -99,7 +122,11 @@
          ;(py (/(send canvas get-height) 2))
          (py 400)
         ]
-  (send dc clear)	 	 	 
+  (send dc clear)
+  (send dc set-origin 300 20)
+  (send dc set-font fontnew) 
+  (drawnewwordregion) ;draw new word region
+  (send dc set-origin 0 0)
   (send dc draw-bitmap destimg 	10 10 )
   (send dc draw-bitmap bptimg   bptposx bptposy)
   (send dc set-font font) 
@@ -118,14 +145,19 @@
   
  (unless playing
    (send dc set-text-foreground "Green")
-   (send dc draw-text "Appuie sur ESPACE pour un nouveau mot  "  0 (+ py 200) )
+   (send dc draw-text "Appuie sur ENTREE pour un nouveau mot  "  0 (+ py 200) )
 )))
 ; define windows
 (define myframe% (class frame%
                  (define/override (on-subwindow-char target ev )(handle-ev ev))
                  (super-new)))
-(define mainwin (new myframe% [label "Ecris un mot"][width 600 ][height 500])) 
-(define canvas (new canvas%	[parent mainwin]
+(define mainwin (new myframe% [label "Ecris un mot"][width 600 ][height 500]))
+(define game-canvas%
+  (class canvas% 
+    (define/override (on-event ev)
+       (handle-mouse ev))
+    (super-new)))
+(define canvas (new game-canvas%	[parent mainwin]
                                 [paint-callback do-paint]))
 
 ; display window in full screen 
@@ -166,7 +198,7 @@
                       )) 
                (begin
                       (set! err #t)
-                      (set! endtxt (format "non il faut un ~a " (string-ref currentword   currentpos)))                 
+                      (set! endtxt (format "non il faut un ~a" (string-ref currentword   currentpos)))                 
                       (send canvas on-paint)
                       (play-sound "Pew.wav" #f)
                       (runspeak (format "\"non un  ~a \" " (string-ref currentword   currentpos)))
@@ -186,4 +218,4 @@
              )))
 )
 ; start with new word 
-
+(setnewwordregion (send canvas get-dc))
