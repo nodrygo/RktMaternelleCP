@@ -4,8 +4,9 @@
 (require racket/draw)
 (require racket/stream)
 ; espeak -vfr+m2 -g 11  -p 55  -s 60 "écrit le mot chien avec un C un H un I  un E un N "
-(define wordslist (file->list "words.txt" ))
+(define wordslist  (shuffle(file->list "words.txt" )))
 (define selection '("" "appuie sur la touche ENTREE pour commencer " #f))
+(define nextword 0)
 (define currentword "appuie sur la touche ENTREE pour commencer" )
 (define currentpos 0 )
 (define blue-brush (new brush% [color "blue"]))
@@ -145,13 +146,13 @@
   
  (unless playing
    (send dc set-text-foreground "Green")
-   (send dc draw-text "Appuie sur ENTREE pour un nouveau mot  "  0 (+ py 200) )
+   (send dc draw-text "Appuie sur ENTREE pour un nouveau mot"  0 (+ py 200) )
 )))
 ; define windows
 (define myframe% (class frame%
                  (define/override (on-subwindow-char target ev )(handle-ev ev))
                  (super-new)))
-(define mainwin (new myframe% [label "Ecris un mot"][width 600 ][height 500]))
+(define mainwin (new myframe% [label "Ecris un mot"][width 800 ][height 500]))
 (define game-canvas%
   (class canvas% 
     (define/override (on-event ev)
@@ -171,7 +172,11 @@
   (set! currentpos 0)
   (set! endtxt "")
   (set! err #f)
-  (set! selection (list-ref wordslist  (random 0 (- (length wordslist ) 1 ))))
+  ;; forget random use shuffle 
+  ;;(set! selection (list-ref wordslist  (random 0 (- (length wordslist ) 1 ))))
+  (set! selection (list-ref wordslist  nextword))
+  (set! nextword (+ 1 nextword))
+  (when (>=  nextword (length wordslist ))   (set! nextword 0))
   (set! currentword (list-ref selection 1  ))
   ; load img
   (loadimg   (build-path  "img" (list-ref selection 2 )))
@@ -185,8 +190,10 @@
 )
 
 (define (addkey k)
+
   (unless (symbol? k )
-         (when (char-alphabetic? k)
+         (when (or(char-alphabetic? k)(char-whitespace? k) )
+           (printf "\n key :~a:   "  k)
            (killspeak)
            (set! endtxt "")
            (if (eq? k (string-ref currentword  currentpos))
