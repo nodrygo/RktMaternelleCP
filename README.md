@@ -25,8 +25,8 @@ Ensuite avec *drracket* ou *gracket*  ouvrez et exécutez *ecrire.rkt*
 il est librement utilisable par qui le désire mais aux risques et périls des utilisateurs  
 
 la touche ***return*** permet de sélectionner un nouveau mot 
-les mots peuvent contenir des espaces
-les mot ne sont plus choisi aléatoire mais un un cycle après mélange 
+les mots peuvent contenir des espaces   
+les mot ne sont plus choisi aléatoirement mais un un cycle après mélange   
 la touche ***echap*** (***escape***) permet de quitter 
 
 
