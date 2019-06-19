@@ -7,7 +7,7 @@ Ce programme à été écrit sur la version **7.2  de Racket** à destination de
 
 2 versions
  * **ecrire.rkt** utilise **eSpeak** un synthétiseur vocal moyen en français   
- * **ecrireWav.rkt** utile uniquement des sons .wav donc pas besoin de l'installation de **eSpeak**
+ * **ecrireWav.rkt** utilise uniquement des sons .wav donc pas besoin de l'installation de **eSpeak**
 
 **ecrire** fonctionne sur un **Linux Mint 19** mais devrait pouvoir fonctionner sur **MacOS** ou **Windows** à la condition qu'une version du logiciel libre **eSpeak** soit utilisable dessus    
 **ecrireWav** devrait marcher partout sans ajout     
